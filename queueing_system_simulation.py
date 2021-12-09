@@ -1,8 +1,5 @@
 import simpy
 import numpy as np
-from functools import reduce
-from tabulate import tabulate
-import matplotlib.pyplot as plt
 
 # Multichannel Queuing System Simulation processes class
 class QueuingSystemSimulation:
