@@ -24,7 +24,7 @@ class CanteenSimulation:
         # enviromental variables for simpy simulation
         self.env = env
         self.checkout_performer = simpy.Resource(env)
-        self.eating_performer = simpy.Resource(env, 64)
+        self.eating_performer = simpy.Resource(env, 5000)
 
     # Singlechannel Canteen Simulation with parameters X, mu, v, test_time
     @staticmethod
@@ -61,7 +61,8 @@ class CanteenSimulation:
             # print(f'L_canteen: {hungry_student.L_canteen}')
 
             yield request
-            yield self.env.process(self.request_eating())
+            for _ in range(hungry_student.count_dishes):
+                yield self.env.process(self.request_eating())
             hungry_student.time_ate = hungry_student.time_checkout + self.env.now - arrival_time
             # print(f'Student №{hungry_student.number} finished eating at {self.env.now}; time_ate = {hungry_student.time_ate}')
             # print(hungry_student.L_canteen, hungry_student.L_checkout, hungry_student.L_queue,
@@ -87,8 +88,8 @@ class CanteenSimulation:
             hungry_student.time_queue = self.env.now - arrival_time
             # print(f'Student №{hungry_student.number} passed queue at {self.env.now}; time_queue = {hungry_student.time_queue}')
 
-            #for _ in range(dishes_count):
-            yield self.env.process(self.request_checkout_processing())
+            for _ in range(hungry_student.count_dishes):
+                yield self.env.process(self.request_checkout_processing())
             hungry_student.time_checkout = self.env.now - arrival_time
             self.hungry_students.append(hungry_student)
             # print(f'Student №{hungry_student.number} passed cash desk at {self.env.now}; time_checkout = {hungry_student.time_checkout}')

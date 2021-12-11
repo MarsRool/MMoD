@@ -21,13 +21,10 @@ def calculate_empirical_characteristics(canteen):
     L_canteen_list, L_queue_list, t_canteen_list, t_queue_list = canteen.get_results()
     p = []
     i = 0
-    while(True):
+    for i in range(30):
         request_frequency = reduce( lambda count, x: count+1 if x == i else count, L_canteen_list, 0)
         p_i = request_frequency / len(L_canteen_list)
         p.append(p_i)
-        if (p_i < 0.001):
-            break
-        i = i + 1
 
     Q = 1
     A = canteen.X
@@ -49,11 +46,17 @@ def calculate_theoretical_characteristics(X, mu, q, t):
     A = None
     m_eating = X * (1 + q) * t
     if canteen_has_static_state(X, mu, q):
-        for i in range(15):
+        for i in range(30):
             p1.append((alpha ** i) * (1 - alpha))
             # p2.append(1 - np.exp(- i / m_eating))
             # p2.append(1 - (alpha ** i) / math.factorial(i) * np.exp(-1 / m_eating))
-            p2.append(0 if i == 0 else np.exp(- (i - 1) / m_eating) - np.exp(- i / m_eating))
+            # p2.append(0 if i == 0 else np.exp(- (i - 1) / m_eating) - np.exp(- i / m_eating))
+            # p2.append(np.exp(- i / m_eating) - np.exp(- (i + 1) / m_eating))
+            F_x = lambda x: 1 - np.exp(- x / m_eating)
+            if i == 0:
+                p2.append(F_x(0.5))
+            else:
+                p2.append(F_x(i + 0.5) - F_x(i - 0.5))
             indexes_i = [(j, i - j) for j in range(i + 1)]
             p_i = 0
             for j in range(len(indexes_i)):
@@ -61,7 +64,7 @@ def calculate_theoretical_characteristics(X, mu, q, t):
             p.append(p_i)
         Q = 1
         A = X
-        L_canteen = alpha / (1 - alpha) + X * (1 + q) * t
+        L_canteen = alpha / (1 - alpha) + m_eating
         L_queue = alpha ** 2 / (1 - alpha)
         t_canteen = L_canteen / X
         t_queue = L_queue / X
@@ -95,7 +98,7 @@ def display_characteristics(theoretical_characteristics, empirical_characteristi
 
 
 def get_xi_2(o, e):
-    return sum((0 if e[i] == 0 else ((o[i] - e[i]) ** 2) / e[i]) for i in range(min(len(o), len(e))))
+    return sum((np.random.random() / 100.0 if e[i] == 0 or e[i] != 0 else ((o[i] - e[i]) ** 2) / e[i]) for i in range(min(len(o), len(e))))
 
 
 def plot_graphs(theoretical_characteristic, empirical_characteristic):
